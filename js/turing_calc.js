@@ -1,14 +1,65 @@
-const tapeElement = document.getElementById('tape');
-const caretElement = document.getElementById('caret');
-var emptySymbol = '□'; // Символ пустоты
-var tape = '11000000000000000000001'; // Пример содержимого ленты
+const tapeElement = document.getElementById('tapes');
+var tapeElements = [];
+var tapes = [];
+var numsElements = [];
+var headPosition = [];
+var countTapes = 0;
+
+var emptySymbol = 'f'; // Символ пустоты
 var headPosition = 0; // Начальная позиция каретки
 
-const tapeWidth = 920;
+var tapeWidth = 362 - 2;
 const cellWidth = 40;
-const countCells = tapeWidth / cellWidth;
-const midCells = countCells / 2;
-const countTempCells = 2;
+var countCells = tapeWidth / cellWidth;
+var midCells = countCells / 2;
+
+var caretPosDelta = [];
+
+function addTape() {
+    var mainDiv = document.createElement("div");
+    mainDiv.id = "tape-container" + countTapes;
+    mainDiv.className = "tape-container";
+
+    var numDiv = document.createElement("div");
+    var tapeDiv = document.createElement("div");
+    numDiv.id = "tape-numbers" + countTapes;
+    tapeDiv.id = "tape" + countTapes;
+    numDiv.className = "tape";
+    tapeDiv.className = "tape";
+
+    var carDiv = document.createElement("div");
+    carDiv.className = "caret";
+    carDiv.id = "caret";
+
+    mainDiv.appendChild(numDiv);
+    mainDiv.appendChild(tapeDiv);
+    mainDiv.appendChild(carDiv);
+
+    tapeElement.appendChild(mainDiv);
+
+    tapeElements[countTapes] = tapeDiv;
+    numsElements[countTapes] = numDiv;
+    headPosition[countTapes] = 0;
+    tapes[countTapes] = "";
+    caretPosDelta[countTapes] = 0;
+
+    countTapes += 1;
+}
+
+addTape();
+addTape();
+
+const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        tapeWidth = width;
+        console.log("tape size:" + tapeWidth);
+        countCells = tapeWidth / cellWidth;
+        midCells = countCells / 2;
+        render();
+    }
+});
+resizeObserver.observe(document.getElementById('tape-container0'));
 
 function clearAnswer() {
 	const lineContainer = document.getElementById('lineContainer');
@@ -23,131 +74,69 @@ function setResultSteps(str) {
 	document.getElementById('result_steps').innerHTML = `Count steps: ${str}`;
 }
 
-function renderTape(emptySymbol, tape) {
-    tapeElement.innerHTML = '';
+function renderTape(emptySymbol, tape, element, head, nums, index) {
+    element.innerHTML = '';
+    nums.innerHTML = '';
     for (let i = 0; i < midCells - 1; i++) {
         const cell = document.createElement('div');
+        const num = document.createElement('div');
         cell.className = 'cell';
         cell.textContent = emptySymbol;
-        tapeElement.appendChild(cell);
+        num.className = 'cell-num';
+        num.textContent = -Math.floor(midCells) + i - caretPosDelta[index];
+        element.appendChild(cell);
+        nums.appendChild(num);
     }
     for (let i = 0; i < tape.length; i++) {
         const cell = document.createElement('div');
+        const num = document.createElement('div');
         cell.className = 'cell';
         cell.textContent = tape[i] || emptySymbol;
-        tapeElement.appendChild(cell);
+        num.className = 'cell-num';
+        num.textContent = i - caretPosDelta[index];
+        nums.appendChild(num);
+        element.appendChild(cell);
     }
     for (let i = 0; i < midCells - 1; i++) {
         const cell = document.createElement('div');
+        const num = document.createElement('div');
         cell.className = 'cell';
         cell.textContent = emptySymbol;
-        tapeElement.appendChild(cell);
+        num.className = 'cell-num';
+        num.textContent = tape.length + i - caretPosDelta[index];
+        nums.appendChild(num);
+        element.appendChild(cell);
     }
-    updateCaretPosition();
+    updateCaretPosition(element, head);
 }
 
-function updateCaretPosition() {
-    const offset = headPosition * cellWidth;
-    tapeElement.style.transform = `translateX(-${offset}px)`;
+function updateCaretPosition(element, head) {
+    const offset = head * cellWidth;
+    element.style.transform = `translateX(-${offset}px)`;
 }
 
-function moveLeft() {
-    if (headPosition > 0) {
-        headPosition--;
-        renderTape();
-    }
-}
-
-function moveRight() {
-    if (headPosition < tape.length) {
-        headPosition++;
-        renderTape();
+function render() {
+    for (var i = 0; i < countTapes; i++) {
+        renderTape(emptySymbol, tapes[i], tapeElements[i], headPosition[i], numsElements[i], i);
     }
 }
 
+render();
 
-renderTape(emptySymbol, tape);
+function showErrorPopup(message) {
+    const popup = document.createElement('div');
+    popup.className = 'error-popup';
+    popup.innerHTML = `
+        <p>${message}</p>
+        <button class="close-btn">Close</button>
+    `;
 
-function convertString(inputString) {
-    const regex = /[a-zA-Z0-9_]+/g;
-    var result = inputString.replace(/['"]/g, '');
-    result = result.replace(regex, match => `"${match}"`);
-    result = '{' + result + '}';
-    result = result.replace(/}/g, '},');
-    result = result.replace(/([LSR])\n/g, '$1,\n');
-    result = result.replace(/,,/g, ',');
-    result = result.replace(/},\s*}/g, '}}');
-    result = result.replace(/}},\s*},/g, '}}}');
-    return result;
+    popup.querySelector('.close-btn').onclick = function() {
+        document.body.removeChild(popup);
+    };
+    document.body.appendChild(popup);
 }
-
-function validateMoveType(move) {
-    if (!MoveType[move]) {
-        throw new Error(`Invalid move type: ${move}. Valid types are: ${Object.keys(MoveType).join(', ')}`);
-    }
-}
-
-function parseTuringMachineProgram(programString, emptySymbol, tape, startState) {
-    const program = JSON.parse(convertString(programString));
-    const result = new TuringProgram(startState, tape, emptySymbol);
-    
-    for (const [stateName, transitions] of Object.entries(program)) {
-        
-        for (const [symbol, action] of Object.entries(transitions)) {
-            if (typeof action === 'string') {
-                validateMoveType(action);
-                result.addTransition(stateName, symbol, new Command(symbol, MoveType[action], stateName));
-            } else {
-                const { write, move, nextState } = action;
-                validateMoveType(move);
-                result.addTransition(stateName, symbol, new Command(write || symbol, MoveType[move], nextState || stateName));
-            }
-        }
-    }
-    
-    return result;
-}
-
-const program = `
-    q1: {
-        1: 'L',
-        e: { write: 1, move: 'L', nextState: 'q2' }
-    },
-    q2: {
-        1: { write: 'e', move: 'R', nextState: 'q3' },
-        e: { write: 1, move: 'L', nextState: 'q3' }
-    },
-    q3: {
-        1: { write: 'e', move: 'R', nextState: 'q4' },
-        e: { write: 1, move: 'L', nextState: 'q4' }
-    },
-    q4: {
-        e: { write: 1, move: 'R', nextState: 'q5' }
-    },
-    q5: {
-        e: { move: 'R', nextState: 'q2' }
-    }
-`;
-//const parsedProgram = parseTuringMachineProgram(program);
-//console.log(parsedProgram);
 
 function run() {
-    var initialState = document.getElementById('initialState').value;
-    var _tape = document.getElementById('tape-input').value;
-    var _emptySymbol = document.getElementById('emptySymbol').value;
-    var programmText = document.getElementById('rules-string').value;
-    var p = parseTuringMachineProgram(programmText, _emptySymbol, _tape, initialState);
-    console.log(p);
-    var t = new TuringMachine(p);
-    var r = t.run(1000);
-    console.log(r);
-
-    setResultString(r.tape);
-    setResultSteps(r.steps);
-    clearAnswer();
-    const lineContainer = document.getElementById('lineContainer');
-    addLinesToContainer(r.history, lineContainer);
-
-    headPosition = r.headPosition;
-    renderTape(_emptySymbol, r.tape)
+    
 };

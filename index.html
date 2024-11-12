@@ -14,7 +14,7 @@
 		<link rel="apple-touch-icon" href="https://ausf-software.github.io/images/favicons/apple.png">  <!-- 180×180 -->
 		<link rel="manifest" href="https://ausf-software.github.io/manifest.webmanifest">
 
-		<link rel="stylesheet" type="text/css" href="/css/standart-style.css">
+		<link rel="stylesheet" type="text/css" href="../ausf-software.github.io/css/standart-style.css">
 		<link rel="stylesheet" type="text/css" href="css/turing_calc.css">
 		
 		<meta name="viewport" content="width=device-width">
@@ -49,42 +49,59 @@
 		</header>
 
 		<main>
-			<section>
-				<div class="tape-container">
-					<div class="tape" id="tape"></div>
-					<div class="caret" id="caret"></div>
-				</div>
+			<section id="tapes" class="tapes">
+				
 			</section>
 			
 			<section class="input-section center">
 				<div class="input-form">
 					<div class="space-div">
-						<label for="emptySymbol">Пустой символ:</label>
-						<input type="text" id="emptySymbol" name="emptySymbol" required>
+						<label for="name-string">Programm name:</label>
+						<input type="text" name="name-string" id="name-string" placeholder="Name" onkeydown="if(event.keyCode==13){return false;}">
 					</div>
 
 					<div class="space-div">
-						<label for="tape">Лента (символы):</label>
-						<input type="text" id="tape-input" name="tape" required>
+						<label for="emptySymbol">Empty symbol:</label>
+						<input type="text" id="emptySymbol" name="emptySymbol" value="f" required>
 					</div>
 
 					<div class="space-div">
-						<label for="initialState">Начальное состояние:</label>
-						<input type="text" id="initialState" name="initialState" required>
-					</div>
-					
-					<div class="space-div">
-						<textarea type="text" class="textarea-size" name="rules-string" id="rules-string" placeholder="Rules"></textarea>
+						<label for="initialState">Start state:</label>
+						<input type="text" id="initialState" name="initialState" value="q0" required>
 					</div>
 
 					<div class="space-div">
-						<button type="submit" onclick="run()">Запустить программу</button>
+						<label for="max-steps">Maximum number of steps:</label>
+						<input type="number" name="max-steps" id="max-steps" placeholder="1000" value="1000" onkeydown="if(event.keyCode==13){return false;}">
+					</div>
+
+					<div class="space-div">
+						<label for="steps-interval">Steps interval (ms):</label>
+						<input type="number" name="steps-interval" id="steps-interval" placeholder="1000" value="500" onkeydown="if(event.keyCode==13){return false;}">
+					</div>
+
+					<div class="space-div">
+						<button type="submit" onclick="run()">Run programm</button>
 					</div>
 				</div>
 				<div class="input-form answer-form">
 					<div id="result_string" class="space-div">Result:</div>
 					<div id="result_steps" class="space-div">Count steps:</div>
 					<div class="line-table-container list-size" id="lineContainer"></div>
+				</div>
+			</section>
+
+			<section class="rules-section">
+				
+			</section>
+
+			<section class="programm-section">
+				<div class="list-con content-container">
+					<div class="lab">
+						Programm list:
+					</div>
+					<div id="programms_div" class="programms-div">
+					</div>
 				</div>
 			</section>
 		</main>
