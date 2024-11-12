@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+
+		<title>Multitape Turing machine emulator</title>
+
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@100&display=swap" rel="stylesheet">
+		
+		<link rel="icon" href="https://ausf-software.github.io/favicon.ico"> <!-- 32×32 -->
+		<link rel="icon" href="https://ausf-software.github.io/images/favicons/icon.svg" type="image/svg+xml">
+		<link rel="apple-touch-icon" href="https://ausf-software.github.io/images/favicons/apple.png">  <!-- 180×180 -->
+		<link rel="manifest" href="https://ausf-software.github.io/manifest.webmanifest">
+
+		<link rel="stylesheet" type="text/css" href="/css/standart-style.css">
+		<link rel="stylesheet" type="text/css" href="css/turing_calc.css">
+		
+		<meta name="viewport" content="width=device-width">
+		<meta name="description" content="Машина Тьюринга — это абстрактная вычислительная модель, которая используется для формализации понятий алгоритма и вычислимости. Она состоит из бесконечной ленты, на которой записаны символы, и головки, которая может читать и записывать символы, а также перемещаться по ленте. Машина Тьюринга является основой теории вычислений и широко применяется в информатике и математике для изучения алгоритмов и сложности вычислений. | The Turing machine is an abstract computational model used to formalize the concepts of algorithm and computability. It consists of an infinite tape on which symbols are written, and a head that can read and write symbols as well as move along the tape. The Turing machine is foundational in the theory of computation and is widely used in computer science and mathematics to study algorithms and computational complexity." />
+		<meta name="keywords" content="машина Тьюринга, вычислимость, алгоритмы, теория вычислений, абстрактные модели, информатика | Turing machine, computability, algorithms, theory of computation, abstract models, computer science" /><meta name = "robots" content = "index,follow" />
+		<script type="text/javascript" src="/js/standart-script.js"></script>
+	</head>
+
+	<body>
+
+		<header>
+			<section>
+				<nav class="navbar">
+					<div class="burger" id="burger">
+						<div class="line"></div>
+						<div class="line"></div>
+						<div class="line"></div>
+					</div>
+					<div class="nav-list" id="nav-list">
+						<a href="/">Home</a>
+						<a href="/about">About</a>
+						<a href="/product">Products</a>
+						<a href="/tutorials">Tutorials</a>
+						<a href="https://github.com/ausf-software">GitHub</a>
+					</div>
+				</nav>
+			</section>
+			<section class="content-container banner">
+				<p>Algorithmic machine</p>
+				<h1 class="slogan">Multitape Turing machine emulator</h1>
+			</section>
+		</header>
+
+		<main>
+			<section>
+				<div class="tape-container">
+					<div class="tape" id="tape"></div>
+					<div class="caret" id="caret"></div>
+				</div>
+			</section>
+			
+			<section class="input-section center">
+				<div class="input-form">
+					<div class="space-div">
+						<label for="emptySymbol">Пустой символ:</label>
+						<input type="text" id="emptySymbol" name="emptySymbol" required>
+					</div>
+
+					<div class="space-div">
+						<label for="tape">Лента (символы):</label>
+						<input type="text" id="tape-input" name="tape" required>
+					</div>
+
+					<div class="space-div">
+						<label for="initialState">Начальное состояние:</label>
+						<input type="text" id="initialState" name="initialState" required>
+					</div>
+					
+					<div class="space-div">
+						<textarea type="text" class="textarea-size" name="rules-string" id="rules-string" placeholder="Rules"></textarea>
+					</div>
+
+					<div class="space-div">
+						<button type="submit" onclick="run()">Запустить программу</button>
+					</div>
+				</div>
+				<div class="input-form answer-form">
+					<div id="result_string" class="space-div">Result:</div>
+					<div id="result_steps" class="space-div">Count steps:</div>
+					<div class="line-table-container list-size" id="lineContainer"></div>
+				</div>
+			</section>
+		</main>
+
+		<script type="text/javascript" src="js/turing.js"></script>
+		<script type="text/javascript" src="js/turing_calc.js"></script>
+
+		<footer>
+			<div class="social-links">
+				<a href="https://habr.com/ru/users/ausf-software/" target="_blank">Habr</a>
+				<a href="https://github.com/ausf-software" target="_blank">GitHub</a>
+				<a href="https://leetcode.com/u/ausf-software/" target="_blank">LeetCode</a>
+			</div>
+		</footer>
+		
+	</body>
+</html>
