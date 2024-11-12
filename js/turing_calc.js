@@ -84,6 +84,7 @@ function renderTape(emptySymbol, tape, element, head, nums, index) {
         cell.textContent = emptySymbol;
         num.className = 'cell-num';
         num.textContent = -Math.floor(midCells) + i - caretPosDelta[index];
+        cell.onclick = () => handleCellClick(index);
         element.appendChild(cell);
         nums.appendChild(num);
     }
@@ -94,6 +95,7 @@ function renderTape(emptySymbol, tape, element, head, nums, index) {
         cell.textContent = tape[i] || emptySymbol;
         num.className = 'cell-num';
         num.textContent = i - caretPosDelta[index];
+        cell.onclick = () => handleCellClick(index);
         nums.appendChild(num);
         element.appendChild(cell);
     }
@@ -104,10 +106,18 @@ function renderTape(emptySymbol, tape, element, head, nums, index) {
         cell.textContent = emptySymbol;
         num.className = 'cell-num';
         num.textContent = tape.length + i - caretPosDelta[index];
+        cell.onclick = () => handleCellClick(index);
         nums.appendChild(num);
         element.appendChild(cell);
     }
     updateCaretPosition(element, head);
+}
+
+function handleCellClick(index) {
+    let userInput = prompt("Enter text to tape " + index + ":");
+    if (userInput == null) userInput = "";
+    tapes[index] = userInput;
+    render();
 }
 
 function updateCaretPosition(element, head) {
