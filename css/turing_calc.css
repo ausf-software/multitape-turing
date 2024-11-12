@@ -127,6 +127,85 @@
     text-decoration: underline;
 }
 
+.rules-section  {
+    margin-bottom: 20px;
+    .content-container {
+        width: 100%;
+		margin: auto;
+    }
+}
+
+.rules-content {
+    display: flex;
+    flex-direction: row;
+    margin: 10px;
+}
+
+.editor-content {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.glady {
+    overflow: auto;
+}
+
+.states-buttons {
+    max-width: 90px;
+    flex-direction: column;
+    background-color: #1f083a;
+    border-radius: 15px;
+    margin-right: 10px;
+
+    .state-button {
+        height: 70px;
+        width: 70px;
+        display: flex;
+        margin: 10px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        justify-items: center;
+        background-color: #2a0d63;
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+        font-size: 16px;
+    }
+    .selected {
+        background-color: #8321f8;
+    }
+    .state-button:hover {
+        background-color: #3a1289;
+    }
+
+    .symbol-field {
+        height: 70px;
+        width: 70px;
+        display: flex;
+        margin: 10px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        justify-items: center;
+        background-color: #2a0d63;
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+        border: none;
+    }
+    .symbol-field:hover {
+        background-color: #3a1289;
+    }
+
+    .symbol-field:focus {
+        color: white;
+    }
+
+    option {
+        color: #fff;
+    }
+}
+
 .programm-section {
 	margin-bottom: 20px;
 	div {
