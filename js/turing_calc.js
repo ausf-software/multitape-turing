@@ -582,6 +582,8 @@ stepsIntervalElement.addEventListener('blur', function() {
 
 function convertToTuringProgramm() {
     var program = new TuringProgram(states[initialState], tapes, emptySymbol, countTapes);
+    console.log(`------------------`)
+    console.log(`programm:`)
     states.forEach((state, state_index) => {
         if (state_symbol.has(state)) {
             state_symbol.get(state).forEach((ar, ar_index) => {
@@ -589,10 +591,12 @@ function convertToTuringProgramm() {
                 var new_st = ar[1];
                 for (var i = 0; i < countTapes; i++) {
                     program.addTransition(state, symbol, i, new Command(ar[2 + i * 2], MoveType[ar[3 + i * 2]], new_st));
+                    console.log(`${state} | ${symbol} | tape ${i} | ${ar[2 + i * 2]} | ${ar[3 + i * 2]}`)
                 }
             });
         }
     });
+    console.log(`------------------`)
     return program;
 }
 
@@ -631,7 +635,7 @@ function run() {
     isModificationAllowed = false;
     clearInterval(intervalId);
     var prog = convertToTuringProgramm();
-    console.log(prog);
+    //console.log(prog);
     startExecution(prog, maxSteps);
 };
 

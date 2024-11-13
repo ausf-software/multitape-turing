@@ -126,7 +126,7 @@ class TuringMachine {
         }
         var flag = false;
         for (var i = 0; i < this.countTape; i++) {
-            const currentSymbol = this.tape[i].charAt(this.headPosition);
+            const currentSymbol = this.tape[i].charAt(this.headPosition[i]);
             const command = this.getCurrentCommand(currentSymbol, i);
 
             if (command) {
