@@ -25,12 +25,13 @@ class ResultTuring {
 }
 
 class TuringProgram {
-    constructor(initialState, tape, emptySymbol, countTape) {
+    constructor(initialState, tape, emptySymbol, countTape, name, transitionTable) {
         this.initialState = initialState;
         this.tape = tape;
         this.emptySymbol = emptySymbol;
-        this.transitionTable = new Map();
+        this.transitionTable = transitionTable || new Map();
         this.countTape = countTape;
+        this.name = name;
     }
 
     addTransition(state, symbol, tape_num, command) {
@@ -41,6 +42,66 @@ class TuringProgram {
             this.transitionTable.get(state).set(symbol, new Map());
         }
         this.transitionTable.get(state).get(symbol).set(tape_num, command);
+    }
+
+    toJSON() {
+        const transitionTableObj = {};
+        this.transitionTable.forEach((symbolMap, state) => {
+            transitionTableObj[state] = {};
+            symbolMap.forEach((tapeMap, symbol) => {
+                transitionTableObj[state][symbol] = {};
+                tapeMap.forEach((command, tape_num) => {
+                    transitionTableObj[state][symbol][tape_num] = command;
+                });
+            });
+        });
+
+        return JSON.stringify({
+            initialState: this.initialState,
+            tape: this.tape,
+            emptySymbol: this.emptySymbol,
+            transitionTable: transitionTableObj,
+            countTape: this.countTape,
+            name: this.name
+        }, null, 2);
+    }
+
+    static fromJSON(jsonString) {
+        const data = JSON.parse(jsonString);
+        const transitionTable = new Map();
+
+        for (const state in data.transitionTable) {
+            const symbolMap = new Map();
+            for (const symbol in data.transitionTable[state]) {
+                const tapeMap = new Map();
+                for (const tape_num in data.transitionTable[state][symbol]) {
+                    const commandData = data.transitionTable[state][symbol][tape_num];
+                    // Создаем экземпляр Command
+                    const command = new Command(commandData.symbolToWrite, commandData.move, commandData.nextState);
+                    tapeMap.set(tape_num, command);
+                }
+                symbolMap.set(symbol, tapeMap);
+            }
+            transitionTable.set(state, symbolMap);
+        }
+
+        return new TuringProgram(
+            data.initialState,
+            data.tape,
+            data.emptySymbol,
+            data.countTape,
+            data.name,
+            transitionTable
+        );
+    }
+
+    static serializeArray(programs) {
+        return JSON.stringify(programs.map(program => JSON.parse(program.toJSON())));
+    }
+
+    static deserializeArray(jsonString) {
+        const dataArray = JSON.parse(jsonString);
+        return dataArray.map(data => TuringProgram.fromJSON(JSON.stringify(data)));
     }
 }
 

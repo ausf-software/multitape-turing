@@ -45,81 +45,89 @@ var name_states = 1;
 var moveType = ["R", "L", "S"]
 
 function addTape() {
-    var mainDiv = document.createElement("div");
-    mainDiv.id = "tape-container" + countTapes;
-    mainDiv.className = "tape-container";
+    if (isModificationAllowed) {
+        var mainDiv = document.createElement("div");
+        mainDiv.id = "tape-container" + countTapes;
+        mainDiv.className = "tape-container";
 
-    var numDiv = document.createElement("div");
-    var tapeDiv = document.createElement("div");
-    numDiv.id = "tape-numbers" + countTapes;
-    tapeDiv.id = "tape" + countTapes;
-    numDiv.className = "tape";
-    tapeDiv.className = "tape";
+        var numDiv = document.createElement("div");
+        var tapeDiv = document.createElement("div");
+        numDiv.id = "tape-numbers" + countTapes;
+        tapeDiv.id = "tape" + countTapes;
+        numDiv.className = "tape";
+        tapeDiv.className = "tape";
 
-    var carDiv = document.createElement("div");
-    carDiv.className = "caret";
-    carDiv.id = "caret";
+        var carDiv = document.createElement("div");
+        carDiv.className = "caret";
+        carDiv.id = "caret";
 
-    mainDiv.appendChild(numDiv);
-    mainDiv.appendChild(tapeDiv);
-    mainDiv.appendChild(carDiv);
+        mainDiv.appendChild(numDiv);
+        mainDiv.appendChild(tapeDiv);
+        mainDiv.appendChild(carDiv);
 
-    tapeElement.appendChild(mainDiv);
+        tapeElement.appendChild(mainDiv);
 
-    tapeElements[countTapes] = tapeDiv;
-    numsElements[countTapes] = numDiv;
-    headPosition[countTapes] = 0;
-    tapes[countTapes] = "f";
-    caretPosDelta[countTapes] = 0;
-
-    for (var st_i = 0; st_i < states.length; st_i++) {
-        if (state_symbol.has(states[st_i])) {
-            for (var i = 0; i < state_symbol.get(states[st_i]).length; i++) {
-                state_symbol.get(states[st_i])[i].push(emptySymbol);
-                state_symbol.get(states[st_i])[i].push("S");
-            }
-        }
-    }
-
-    countTapes += 1;
-    render();
-    renderEditor();
-}
-
-function removeTape() {
-    if (countTapes > 1) {
-        countTapes -= 1;
-
-        var lastTapeId = "tape-container" + countTapes;
-        var lastTapeElement = document.getElementById(lastTapeId);
-
-        if (lastTapeElement) {
-            lastTapeElement.remove();
-        } else {
-            return;
-        }
-
-
-        tapeElements.pop();
-        numsElements.pop();
-        headPosition.pop();
-        tapes.pop();
-        caretPosDelta.pop();
+        tapeElements[countTapes] = tapeDiv;
+        numsElements[countTapes] = numDiv;
+        headPosition[countTapes] = 0;
+        tapes[countTapes] = "f";
+        caretPosDelta[countTapes] = 0;
 
         for (var st_i = 0; st_i < states.length; st_i++) {
             if (state_symbol.has(states[st_i])) {
                 for (var i = 0; i < state_symbol.get(states[st_i]).length; i++) {
-                    state_symbol.get(states[st_i])[i].pop();
-                    state_symbol.get(states[st_i])[i].pop();
+                    state_symbol.get(states[st_i])[i].push(emptySymbol);
+                    state_symbol.get(states[st_i])[i].push("S");
                 }
             }
         }
-        
-        console.log("Удалена лента с ID:", countTapes);
+
+        countTapes += 1;
         render();
         renderEditor();
     } else {
-        console.log("Нет лент для удаления.");
+        showErrorPopup("Machine is run");
+    }
+}
+
+function removeTape() {
+    if (isModificationAllowed) {
+        if (countTapes > 1) {
+            countTapes -= 1;
+
+            var lastTapeId = "tape-container" + countTapes;
+            var lastTapeElement = document.getElementById(lastTapeId);
+
+            if (lastTapeElement) {
+                lastTapeElement.remove();
+            } else {
+                return;
+            }
+
+
+            tapeElements.pop();
+            numsElements.pop();
+            headPosition.pop();
+            tapes.pop();
+            caretPosDelta.pop();
+
+            for (var st_i = 0; st_i < states.length; st_i++) {
+                if (state_symbol.has(states[st_i])) {
+                    for (var i = 0; i < state_symbol.get(states[st_i]).length; i++) {
+                        state_symbol.get(states[st_i])[i].pop();
+                        state_symbol.get(states[st_i])[i].pop();
+                    }
+                }
+            }
+            
+            console.log("Удалена лента с ID:", countTapes);
+            render();
+            renderEditor();
+        } else {
+            console.log("Нет лент для удаления.");
+        }
+    } else {
+        showErrorPopup("Machine is run");
     }
 }
 
@@ -290,6 +298,7 @@ function addState() {
     if (isModificationAllowed) {
         var name = `q${name_states}`;
         states.push(name);
+        state_symbol.set(name, []);
         name_states += 1;
         var raz = document.getElementById("editor-content");
         var n = document.createElement("div");
@@ -398,7 +407,6 @@ function renderStatePanel() {
 
 function renderContentEditor(state) {
     var edit = document.getElementById(`edit-${state}`);
-    //console.log("render editor " + state)
     edit.innerHTML = "";
     var temp = "";
     var com_ar = state_symbol.get(state) || [];
@@ -581,7 +589,7 @@ stepsIntervalElement.addEventListener('blur', function() {
 });
 
 function convertToTuringProgramm() {
-    var program = new TuringProgram(states[initialState], tapes, emptySymbol, countTapes);
+    var program = new TuringProgram(states[initialState], tapes, emptySymbol, countTapes, programmName);
     console.log(`------------------`)
     console.log(`programm:`)
     states.forEach((state, state_index) => {
@@ -605,7 +613,7 @@ var intervalId;
 function startExecution(program, maxSteps) {
     const machine = new TuringMachine(program);
     let stepsTaken = 0;
-    console.log(machine);
+    //console.log(machine);
     intervalId = setInterval(() => {
         if (stepsTaken < maxSteps) {
             const result = machine.step();
@@ -642,4 +650,152 @@ function run() {
 function stop() {
     clearInterval(intervalId);
     isModificationAllowed = true;
+}
+
+/////////////////
+var programs = [];
+
+function downloadProgramms() {
+    const blob = new Blob([TuringProgram.serializeArray(programs)], { type: 'application/json' });
+	const filename = "turing_program.dmtm";
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'data.json';
+
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+document.getElementById('fileInput').addEventListener('change', (event) => {
+	const file = event.target.files[0];
+
+	if (file) {
+		const reader = new FileReader();
+		reader.onload = function(event) {
+			const serializedData = event.target.result;
+			const pro = TuringProgram.deserializeArray(serializedData);
+			//console.log(pro);
+			programs = pro;
+			proggramDivUpdate();
+            render();
+            renderEditor();
+		};
+		reader.readAsText(file);
+	} else {
+		showErrorPopup('Пожалуйста, выберите файл для загрузки.');
+	}
+});
+
+function addProgramm () {
+	programs.push(convertToTuringProgramm())
+	proggramDivUpdate();
+}
+
+function removeProgramm(n) {
+	programs.splice(n, 1);
+	proggramDivUpdate();
+}
+
+function convertFromTuringProgram(program) {
+    tapes = program.tape;
+    console.log(program.countTape);
+    for (var i = 1; i < program.countTape; i++) {
+        addTape()
+    }
+    states = [];
+    state_symbol = new Map();
+    emptySymbol = program.emptySymbol;
+    programmName = program.name;
+    
+
+
+    //console.log(program);
+
+    // Извлечение состояний и переходов
+    program.transitionTable.forEach((symbolMap, state) => {
+        states.push(state);
+        symbolMap.forEach((tapeMap, symbol) => {
+            var temp = [symbol]
+            var p = false;
+            tapeMap.forEach((command, tapeNum) => {
+                if (!state_symbol.has(state)) {
+                    state_symbol.set(state, []);
+                }
+                const newState = command.nextState;
+                const writeSymbol = command.symbolToWrite;
+                const moveType = command.move.charAt(0);
+                if (!p) {
+                    p = true;
+                    temp.push(newState);
+                } 
+
+                temp.push(writeSymbol);
+                temp.push(moveType);
+            });
+            state_symbol.get(state).push(temp);
+        });
+    });
+
+    console.log(`------------------`);
+    console.log(`programm:`);
+    states.forEach((state) => {
+        if (state_symbol.has(state)) {
+            state_symbol.get(state).forEach((ar) => {
+                const symbol = ar[0];
+                const newState = ar[1];
+                const writeSymbol = ar[2];
+                const moveType = ar[3];
+                console.log(`${state} | ${symbol} | tape | ${writeSymbol} | ${moveType}`);
+            });
+        }
+    });
+    console.log(`------------------`);
+}
+
+function loadProgramm(n) {
+	var p = programs[n];
+    select_state = 0;
+
+    convertFromTuringProgram(p);
+    tapes = p.tape;
+    console.log(programs)
+
+    console.log(states)
+    var raz = document.getElementById("editor-content");
+    raz.innerHTML = `<div class="states-buttons" id="states-buttons"></div>`;
+    states.forEach((state) => {
+        var n = document.createElement("div");
+        n.className = "editor-content";
+        n.id = `edit-${state}`;
+        raz.appendChild(n);
+    });
+
+    renderSettings();
+	programmNameElement.value = programmName;
+    initialState.value = states.indexOf(p.initialState);
+    emptySymbolElement.value = emptySymbol;
+    render();
+    renderEditor();
+}
+
+function proggramDivUpdate() {
+	var div = document.getElementById("programms_div");
+	div.innerHTML = "";
+
+	var res = "";
+	for (var i = 0; i < programs.length; i++) {
+		res += "<div class='program'>";
+		res += `<span class="program-name">${programs[i].name}</span>`;
+		res += '<div class="programm-buttons">';
+		res += `<button onclick='loadProgramm(${i})' class="btn download">Load</button>`;
+		res += `<button onclick='removeProgramm(${i})' class="btn delete">Remove</button>`;
+		//res += `<button onclick='updateProgramm(${i})' class="btn save">Update</button>`;
+		res += '</div>';
+		res += "</div>";
+	}
+	div.innerHTML = res;
 }

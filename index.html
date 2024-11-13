@@ -83,15 +83,15 @@
 
 					<div class="space-div">
 						<button onclick="addTape()">Add tape</button>
-					</div>
-					<div class="space-div">
 						<button onclick="removeTape()">Remove tape</button>
-					</div>
-					<div class="space-div">
 						<button type="submit" onclick="run()">Run programm</button>
-					</div>
-					<div class="space-div">
 						<button type="submit" onclick="stop()">Stop programm</button>
+						<button id="add" onclick="addProgramm()">Add programm</button>
+						<button id="save_file" onclick="downloadProgramms()">Save file</button>
+						<label for="fileInput" class="styled-file-upload">
+							<input type="file" id="fileInput" accept=".dmtm" />
+							Upload File
+						</label>
 					</div>
 				</div>
 				<div class="input-form answer-form">
