@@ -88,9 +88,15 @@ function removeTape() {
     if (countTapes > 1) {
         countTapes -= 1;
 
-        var lastTapeElement = tapeElements[countTapes];
+        var lastTapeId = "tape-container" + countTapes;
+        var lastTapeElement = document.getElementById(lastTapeId);
 
-        lastTapeElement.remove();
+        if (lastTapeElement) {
+            lastTapeElement.remove();
+        } else {
+            return;
+        }
+
 
         tapeElements.pop();
         numsElements.pop();
@@ -285,6 +291,15 @@ function removeState(num) {
         state_symbol.delete(states[num]);
         document.getElementById(`edit-${states[num]}`).remove();
         states.splice(num, 1);
+        if (initialState > num) {
+            initialState--;
+        }
+        if (initialState == num) {
+            initialState = 0;
+        }
+        if (select_state > num) {
+            select_state--;
+        }
         renderEditor();
     }
 }
@@ -362,6 +377,7 @@ function renderStatePanel() {
 
 function renderContentEditor(state) {
     var edit = document.getElementById(`edit-${state}`);
+    //console.log("render editor " + state)
     edit.innerHTML = "";
     var temp = "";
     var com_ar = state_symbol.get(state) || [];
