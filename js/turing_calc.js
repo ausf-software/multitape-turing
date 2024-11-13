@@ -18,6 +18,8 @@ var numsElements = [];
 var headPosition = [];
 var countTapes = 0;
 
+var isModificationAllowed = true;
+
 var emptySymbol = 'f';
 
 var tapeWidth = 362 - 2;
@@ -67,7 +69,7 @@ function addTape() {
     tapeElements[countTapes] = tapeDiv;
     numsElements[countTapes] = numDiv;
     headPosition[countTapes] = 0;
-    tapes[countTapes] = "";
+    tapes[countTapes] = "f";
     caretPosDelta[countTapes] = 0;
 
     for (var st_i = 0; st_i < states.length; st_i++) {
@@ -184,19 +186,24 @@ function renderTape(emptySymbol, tape, element, head, nums, index) {
         nums.appendChild(num);
         element.appendChild(cell);
     }
-    updateCaretPosition(element, head);
+    updateCaretPosition(element, nums, head);
 }
 
 function handleCellClick(index) {
-    let userInput = prompt("Enter text to tape " + index + ":");
-    if (userInput == null) userInput = "";
-    tapes[index] = userInput;
-    render();
+    if (isModificationAllowed) {
+        let userInput = prompt("Enter text to tape " + index + ":");
+        if (userInput == null) userInput = "f";
+        tapes[index] = userInput;
+        render();
+    } else {
+        showErrorPopup("Machine is run");
+    }
 }
 
-function updateCaretPosition(element, head) {
+function updateCaretPosition(element, nums, head) {
     const offset = head * cellWidth;
     element.style.transform = `translateX(-${offset}px)`;
+    nums.style.transform = `translateX(-${offset}px)`;
 }
 
 function render() {
@@ -264,8 +271,12 @@ function generateStateSelect(state, symbol, selected) {
 }
 
 function removeStateSymbol() {
-    deletingStr = !deletingStr;
-    renderEditor();
+    if (isModificationAllowed) {
+        deletingStr = !deletingStr;
+        renderEditor();
+    } else {
+        showErrorPopup("Machine is run");
+    }
 }
 
 function removeStr(num) {
@@ -274,16 +285,20 @@ function removeStr(num) {
 }
 
 function addState() {
-    var name = `q${name_states}`;
-    states.push(name);
-    name_states += 1;
-    var raz = document.getElementById("editor-content");
-    var n = document.createElement("div");
-    n.className = "editor-content";
-    n.id = `edit-${name}`;
-    raz.appendChild(n);
-    renderEditor()
-    renderSettings();
+    if (isModificationAllowed) {
+        var name = `q${name_states}`;
+        states.push(name);
+        name_states += 1;
+        var raz = document.getElementById("editor-content");
+        var n = document.createElement("div");
+        n.className = "editor-content";
+        n.id = `edit-${name}`;
+        raz.appendChild(n);
+        renderEditor()
+        renderSettings();
+    } else {
+        showErrorPopup("Machine is run");
+    }
 }
 
 function removeState(num) {
@@ -305,16 +320,20 @@ function removeState(num) {
 }
 
 function addStateSymbol(state) {
-    if (!state_symbol.has(state)) {
-        state_symbol.set(state, []);
+    if (isModificationAllowed) {
+        if (!state_symbol.has(state)) {
+            state_symbol.set(state, []);
+        }
+        var addAr = [emptySymbol, state];
+        for (var i = 0; i < countTapes; i++) {
+            addAr.push(emptySymbol);
+            addAr.push("S");
+        }
+        state_symbol.get(state).push(addAr);
+        renderEditor();
+    } else {
+        showErrorPopup("Machine is run");
     }
-    var addAr = [emptySymbol, state];
-    for (var i = 0; i < countTapes; i++) {
-        addAr.push(emptySymbol);
-        addAr.push("S");
-    }
-    state_symbol.get(state).push(addAr);
-    renderEditor();
 }
 
 function changeEdit(index) {
@@ -480,60 +499,141 @@ function renderSettings() {
 renderSettings();
 
 initialStateElement.addEventListener('blur', function() {
-    var temp = initialStateElement.value;
-    if (temp)
-        initialState = temp;
-    else {
-        initialState = 0;
+    if (isModificationAllowed) {
+        var temp = initialStateElement.value;
+        if (temp)
+            initialState = temp;
+        else {
+            initialState = 0;
+            initialStateElement.value = initialState;
+        }
+    } else {
+        showErrorPopup("Machine is run");
         initialStateElement.value = initialState;
     }
     render();
 });
 
 emptySymbolElement.addEventListener('blur', function() {
-    var temp = emptySymbolElement.value;
-    if (temp && temp.length == 1)
-        emptySymbol = temp;
-    else {
-        emptySymbol = 'f';
-        emptySymbolElement.value = 'f';
+    if (isModificationAllowed) {
+        var temp = emptySymbolElement.value;
+        if (temp && temp.length == 1)
+            emptySymbol = temp;
+        else {
+            emptySymbol = 'f';
+            emptySymbolElement.value = 'f';
+        }
+    } else {
+        showErrorPopup("Machine is run");
+        emptySymbolElement.value = emptySymbol;
     }
     render();
 });
 
 programmNameElement.addEventListener('blur', function() {
-    var temp = programmNameElement.value;
-    if (temp)
-        programmName = temp;
-    else {
-        programmName = 'Untitled';
+    if (isModificationAllowed) {
+        var temp = programmNameElement.value;
+        if (temp)
+            programmName = temp;
+        else {
+            programmName = 'Untitled';
+            programmNameElement.value = programmName;
+        }
+    } else {
+        showErrorPopup("Machine is run");
         programmNameElement.value = programmName;
     }
     render();
 });
 
 maxStepsElement.addEventListener('blur', function() {
-    var temp = maxStepsElement.value;
-    if (temp)
-        maxSteps = temp;
-    else {
-        maxSteps = 1000;
+    if (isModificationAllowed) {
+        var temp = maxStepsElement.value;
+        if (temp)
+            maxSteps = temp;
+        else {
+            maxSteps = 1000;
+            maxStepsElement.value = maxSteps;
+        }
+    } else {
+        showErrorPopup("Machine is run");
         maxStepsElement.value = maxSteps;
     }
     render();
 });
 
 stepsIntervalElement.addEventListener('blur', function() {
-    var temp = stepsIntervalElement.value;
-    if (temp)
-        stepsInterval = temp;
-    else {
-        stepsInterval = 500;
+    if (isModificationAllowed) {
+        var temp = stepsIntervalElement.value;
+        if (temp)
+            stepsInterval = temp;
+        else {
+            stepsInterval = 500;
+            stepsIntervalElement.value = stepsInterval;
+        }
+    } else {
+        showErrorPopup("Machine is run");
         stepsIntervalElement.value = stepsInterval;
     }
     render();
 });
 
+function convertToTuringProgramm() {
+    var program = new TuringProgram(states[initialState], tapes, emptySymbol, countTapes);
+    states.forEach((state, state_index) => {
+        if (state_symbol.has(state)) {
+            state_symbol.get(state).forEach((ar, ar_index) => {
+                var symbol = ar[0];
+                var new_st = ar[1];
+                for (var i = 0; i < countTapes; i++) {
+                    program.addTransition(state, symbol, i, new Command(ar[2 + i * 2], MoveType[ar[3 + i * 2]], new_st));
+                }
+            });
+        }
+    });
+    return program;
+}
+
+var intervalId;
+
+function startExecution(program, maxSteps) {
+    const machine = new TuringMachine(program);
+    let stepsTaken = 0;
+    console.log(machine);
+    intervalId = setInterval(() => {
+        if (stepsTaken < maxSteps) {
+            const result = machine.step();
+            if (!result) {
+                clearInterval(intervalId);
+                isModificationAllowed = true;
+                return;
+            }
+            stepsTaken++;
+            tapes = machine.tape;
+            headPosition = machine.headPosition;
+            caretPosDelta = machine.caretPosDelta;
+            //console.log(`Step: ${stepsTaken}, Tape: ${tapes}, Head Position: ${headPosition}`);
+            clearAnswer();
+            render();
+            document.getElementById("result_steps").innerHTML = "Count steps: " + stepsTaken;
+            const lineContainer = document.getElementById('lineContainer');
+            addLinesToContainer(machine.history, lineContainer);
+        } else {
+            clearInterval(intervalId);
+            isModificationAllowed = true;
+        }
+    }, stepsInterval);
+}
+
 function run() {
-    
+    isModificationAllowed = false;
+    clearInterval(intervalId);
+    var prog = convertToTuringProgramm();
+    console.log(prog);
+    startExecution(prog, maxSteps);
 };
+
+function stop() {
+    clearInterval(intervalId);
+    isModificationAllowed = true;
+}

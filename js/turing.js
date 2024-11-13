@@ -50,7 +50,8 @@ class TuringMachine {
         this.transitionTable = new Map(program.transitionTable);
         this.currentState = program.initialState;
         this.tape = program.tape;
-        this.headPosition = Array(program.countTape).fill(0);;
+        this.headPosition = Array(program.countTape).fill(0);
+        this.caretPosDelta = Array(program.countTape).fill(0);
         this.emptySymbol = program.emptySymbol;
         this.history = [];
         this.countTape = program.countTape;
@@ -64,6 +65,7 @@ class TuringMachine {
                 if (this.headPosition[tape_num] < 0) {
                     this.tape[tape_num] = this.emptySymbol + this.tape[tape_num]; // Add symbol to the left
                     this.headPosition[tape_num] = 0;
+                    this.caretPosDelta[tape_num] += 1;
                 }
                 break;
             case MoveType.RIGHT:
@@ -79,7 +81,7 @@ class TuringMachine {
     }
 
     commandExecute(command, tape_num) {
-        this.history.push(`${this.currentState} | ${this.tape[tape_num].charAt(this.headPosition[tape_num])}`);
+        this.history.push(`${this.currentState} | tape #${tape_num} | ${this.tape[tape_num].charAt(this.headPosition[tape_num])} | ${command.symbolToWrite}`);
         // Write the symbol
         this.tape[tape_num] = this.tape[tape_num].substring(0, this.headPosition[tape_num]) + command.symbolToWrite +
                                 this.tape[tape_num].substring(this.headPosition[tape_num] + 1);
