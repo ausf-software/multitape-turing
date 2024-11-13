@@ -1,3 +1,15 @@
+Element.prototype.remove = function() {
+    this.parentElement.removeChild(this);
+}
+NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    for(var i = this.length - 1; i >= 0; i--) {
+        if(this[i] && this[i].parentElement) {
+            this[i].parentElement.removeChild(this[i]);
+        }
+    }
+}
+
+
 const tapeElement = document.getElementById('tapes');
 const editorHeaderElement = document.getElementById('editor-header');
 var tapeElements = [];
@@ -6,8 +18,7 @@ var numsElements = [];
 var headPosition = [];
 var countTapes = 0;
 
-var emptySymbol = 'f'; // Символ пустоты
-var headPosition = 0; // Начальная позиция каретки
+var emptySymbol = 'f';
 
 var tapeWidth = 362 - 2;
 const cellWidth = 40;
@@ -16,10 +27,16 @@ var midCells = countCells / 2;
 
 var caretPosDelta = [];
 
+var deletingStr = false;
+
 /////////////////////
 var states = ["q0"];
 var state_symbol = new Map();
 var select_state = 0;
+var maxSteps = 1000;
+var stepsInterval = 500;
+var programmName = "Untitled";
+var initialState = 0;
 
 var name_states = 1;
 
@@ -53,7 +70,49 @@ function addTape() {
     tapes[countTapes] = "";
     caretPosDelta[countTapes] = 0;
 
+    for (var st_i = 0; st_i < states.length; st_i++) {
+        if (state_symbol.has(states[st_i])) {
+            for (var i = 0; i < state_symbol.get(states[st_i]).length; i++) {
+                state_symbol.get(states[st_i])[i].push(emptySymbol);
+                state_symbol.get(states[st_i])[i].push("S");
+            }
+        }
+    }
+
     countTapes += 1;
+    render();
+    renderEditor();
+}
+
+function removeTape() {
+    if (countTapes > 1) {
+        countTapes -= 1;
+
+        var lastTapeElement = tapeElements[countTapes];
+
+        lastTapeElement.remove();
+
+        tapeElements.pop();
+        numsElements.pop();
+        headPosition.pop();
+        tapes.pop();
+        caretPosDelta.pop();
+
+        for (var st_i = 0; st_i < states.length; st_i++) {
+            if (state_symbol.has(states[st_i])) {
+                for (var i = 0; i < state_symbol.get(states[st_i]).length; i++) {
+                    state_symbol.get(states[st_i])[i].pop();
+                    state_symbol.get(states[st_i])[i].pop();
+                }
+            }
+        }
+        
+        console.log("Удалена лента с ID:", countTapes);
+        render();
+        renderEditor();
+    } else {
+        console.log("Нет лент для удаления.");
+    }
 }
 
 addTape();
@@ -198,6 +257,16 @@ function generateStateSelect(state, symbol, selected) {
     return select;
 }
 
+function removeStateSymbol() {
+    deletingStr = !deletingStr;
+    renderEditor();
+}
+
+function removeStr(num) {
+    state_symbol.get(states[select_state]).splice(num, 1);
+    renderEditor();
+}
+
 function addState() {
     var name = `q${name_states}`;
     states.push(name);
@@ -208,12 +277,14 @@ function addState() {
     n.id = `edit-${name}`;
     raz.appendChild(n);
     renderEditor()
+    renderSettings();
 }
 
 function removeState(num) {
     if (states.length > 1) {
+        state_symbol.delete(states[num]);
+        document.getElementById(`edit-${states[num]}`).remove();
         states.splice(num, 1);
-        state_symbol.splice(num, 1);
         renderEditor();
     }
 }
@@ -249,12 +320,12 @@ function renderHeader() {
         </a>
     </div>
     <div class="states-buttons">
-        <a class="state-button">
+        <a class="state-button" onclick="removeStateSymbol()">
             Symbol read
         </a>
     </div>
     <div class="states-buttons">
-        <a class="state-button">
+        <a class="state-button" onclick="removeStateSymbol()">
             Next state
         </a>
     </div>`;
@@ -262,12 +333,12 @@ function renderHeader() {
         editorHeaderElement.innerHTML +=
         `
         <div class="states-buttons">
-            <a class="state-button">
+            <a class="state-button" onclick="removeStateSymbol()">
                 Tape #${i} symbol
             </a>
         </div>
         <div class="states-buttons">
-            <a class="state-button">
+            <a class="state-button" onclick="removeStateSymbol()">
                 Tape #${i} move
             </a>
         </div>
@@ -282,9 +353,11 @@ function renderStatePanel() {
         if (index === select_state)
             panel.innerHTML += `<a class="state-button selected">${st}</a>`;
         else
-            panel.innerHTML += `<a class="state-button" onclick="changeEdit(${index})">${st}</a>`;
+            panel.innerHTML += `<a class="state-button ${deletingStr ? "deleting" : ""}"
+                                onclick="${deletingStr ? `removeState(${index})` : `changeEdit(${index})`}">${st}</a>`;
     });
-    panel.innerHTML += `<a class="state-button" onclick="addState()">+</a>`;
+    if (!deletingStr)
+        panel.innerHTML += `<a class="state-button" onclick="addState()">+</a>`;
 }
 
 function renderContentEditor(state) {
@@ -293,10 +366,12 @@ function renderContentEditor(state) {
     var temp = "";
     var com_ar = state_symbol.get(state) || [];
     com_ar.forEach((command, index) => {
-        temp += `<input type="text" class="symbol-field" id="symbol-${state}-${index}" placeholder="0" value="${command[0]}"
-        onblur="state_symbol.get('${state}')[${index}][0] = document.getElementById('symbol-${state}-${index}').value;"></input>`;
+        temp += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="symbol-${state}-${index}" placeholder="0" value="${command[0]}"
+        onblur="state_symbol.get('${state}')[${index}][0] = document.getElementById('symbol-${state}-${index}').value;"
+        ${deletingStr ? `onclick="removeStr(${index})"` : ""}></input>`;
     });
-    temp += `<a class="state-button" onclick="addStateSymbol('${state}')">+</a>`;
+    if (!deletingStr)
+        temp += `<a class="state-button" onclick="addStateSymbol('${state}')">+</a>`;
     edit.innerHTML += `<div class="states-buttons">${temp}</div>`;
 
     ///
@@ -307,13 +382,19 @@ function renderContentEditor(state) {
         t.addEventListener('change', (event) => {
             state_symbol.get(state)[index][1] = t.value;
         });
+        if (deletingStr) {
+            t.classList.add("deleting");
+            t.onclick = () => removeStr(index);
+        }
         nextStateDivCon.appendChild(t);
     });
-    var tempDiv = document.createElement("a");
-    tempDiv.className = "state-button";
-    tempDiv.textContent = "+";
-    tempDiv.onclick = () => addStateSymbol(state);
-    nextStateDivCon.appendChild(tempDiv);
+    if (!deletingStr) {
+        var tempDiv = document.createElement("a");
+        tempDiv.className = "state-button";
+        tempDiv.textContent = "+";
+        tempDiv.onclick = () => addStateSymbol(state);
+        nextStateDivCon.appendChild(tempDiv);
+    }
     edit.appendChild(nextStateDivCon);
     
     for (var i = 0; i < countTapes; i++) {
@@ -321,10 +402,12 @@ function renderContentEditor(state) {
         tapeCon.className = "states-buttons";
         com_ar.forEach((command, index) => {
             var g = i;
-            tapeCon.innerHTML += `<input type="text" class="symbol-field" id="${state}-${command[0]}-tape-${index}" placeholder="0" value="${command[2 + i * 2]}"
-            onblur="state_symbol.get('${state}')[${index}][2 + ${g} * 2] = document.getElementById('${state}-${command[0]}-tape-${index}').value;"></input>`;
+            tapeCon.innerHTML += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="${state}-${command[0]}-tape-${index}" placeholder="0" value="${command[2 + i * 2]}"
+            onblur="state_symbol.get('${state}')[${index}][2 + ${g} * 2] = document.getElementById('${state}-${command[0]}-tape-${index}').value;"
+            ${deletingStr ? `onclick="removeStr(${index})"` : ""}></input>`;
         });
-        tapeCon.innerHTML += `<a class="state-button" onclick="addStateSymbol('${state}')">+</a>`;
+        if (!deletingStr)
+            tapeCon.innerHTML += `<a class="state-button" onclick="addStateSymbol('${state}')">+</a>`;
         edit.appendChild(tapeCon);
 
         var tapeCon2 = document.createElement("div");
@@ -335,13 +418,21 @@ function renderContentEditor(state) {
             t.addEventListener('change', (event) => {
                 state_symbol.get(state)[index][3 + g * 2] = t.value;
             });
+            if (deletingStr) {
+                t.classList.add("deleting");
+                t.onclick = () => removeStr(index);
+            }
             tapeCon2.appendChild(t);
         });
-        var tempDiv = document.createElement("a");
-        tempDiv.className = "state-button";
-        tempDiv.textContent = "+";
-        tempDiv.onclick = () => addStateSymbol(state);
-        tapeCon2.appendChild(tempDiv);
+        
+        if (!deletingStr) {
+            var tempDiv = document.createElement("a");
+            tempDiv.className = "state-button";
+            tempDiv.textContent = "+";
+            tempDiv.onclick = () => addStateSymbol(state);
+            tapeCon2.appendChild(tempDiv);
+        }
+        
         edit.appendChild(tapeCon2);
     }
 }
@@ -354,6 +445,78 @@ function renderEditor() {
 
 renderEditor();
 
+const emptySymbolElement = document.getElementById('emptySymbol');
+const maxStepsElement = document.getElementById('max-steps');
+const stepsIntervalElement = document.getElementById('steps-interval');
+const programmNameElement = document.getElementById('name-string');
+const initialStateElement = document.getElementById('initialState');
+
+function renderSettings() {
+    while (initialStateElement.options.length > 0) {
+        initialStateElement.remove(0);
+    }
+    states.forEach((state, index) => {
+        initialStateElement.appendChild(new Option(state, index));
+    });
+    initialStateElement.value = initialState;
+}
+
+renderSettings();
+
+initialStateElement.addEventListener('blur', function() {
+    var temp = initialStateElement.value;
+    if (temp)
+        initialState = temp;
+    else {
+        initialState = 0;
+        initialStateElement.value = initialState;
+    }
+    render();
+});
+
+emptySymbolElement.addEventListener('blur', function() {
+    var temp = emptySymbolElement.value;
+    if (temp && temp.length == 1)
+        emptySymbol = temp;
+    else {
+        emptySymbol = 'f';
+        emptySymbolElement.value = 'f';
+    }
+    render();
+});
+
+programmNameElement.addEventListener('blur', function() {
+    var temp = programmNameElement.value;
+    if (temp)
+        programmName = temp;
+    else {
+        programmName = 'Untitled';
+        programmNameElement.value = programmName;
+    }
+    render();
+});
+
+maxStepsElement.addEventListener('blur', function() {
+    var temp = maxStepsElement.value;
+    if (temp)
+        maxSteps = temp;
+    else {
+        maxSteps = 1000;
+        maxStepsElement.value = maxSteps;
+    }
+    render();
+});
+
+stepsIntervalElement.addEventListener('blur', function() {
+    var temp = stepsIntervalElement.value;
+    if (temp)
+        stepsInterval = temp;
+    else {
+        stepsInterval = 500;
+        stepsIntervalElement.value = stepsInterval;
+    }
+    render();
+});
 
 function run() {
     

@@ -57,7 +57,7 @@
 				<div class="input-form">
 					<div class="space-div">
 						<label for="name-string">Programm name:</label>
-						<input type="text" name="name-string" id="name-string" placeholder="Name" onkeydown="if(event.keyCode==13){return false;}">
+						<input type="text" name="name-string" id="name-string" placeholder="Name" onkeydown="if(event.keyCode==13){return false;}" value="Untitled">
 					</div>
 
 					<div class="space-div">
@@ -67,7 +67,8 @@
 
 					<div class="space-div">
 						<label for="initialState">Start state:</label>
-						<input type="text" id="initialState" name="initialState" value="q0" required>
+						<select id="initialState" name="initialState">
+						</select>
 					</div>
 
 					<div class="space-div">
@@ -80,6 +81,12 @@
 						<input type="number" name="steps-interval" id="steps-interval" placeholder="1000" value="500" onkeydown="if(event.keyCode==13){return false;}">
 					</div>
 
+					<div class="space-div">
+						<button onclick="addTape()">Add tape</button>
+					</div>
+					<div class="space-div">
+						<button onclick="removeTape()">Remove tape</button>
+					</div>
 					<div class="space-div">
 						<button type="submit" onclick="run()">Run programm</button>
 					</div>
