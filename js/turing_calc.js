@@ -194,6 +194,8 @@ function handleCellClick(index) {
         let userInput = prompt("Enter text to tape " + index + ":");
         if (userInput == null) userInput = "f";
         tapes[index] = userInput;
+        headPosition[index] = 0;
+        caretPosDelta[index] = 0;
         render();
     } else {
         showErrorPopup("Machine is run");
