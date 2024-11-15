@@ -200,7 +200,7 @@ function renderTape(emptySymbol, tape, element, head, nums, index) {
 function handleCellClick(index) {
     if (isModificationAllowed) {
         let userInput = prompt("Enter text to tape " + index + ":");
-        if (userInput == null) userInput = "f";
+        if (userInput == null || userInput.length == 0) userInput = "f";
         tapes[index] = userInput;
         headPosition[index] = 0;
         caretPosDelta[index] = 0;
