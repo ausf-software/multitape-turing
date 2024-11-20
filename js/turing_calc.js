@@ -338,7 +338,7 @@ function addStateSymbol(state) {
         if (!state_symbol.has(state)) {
             state_symbol.set(state, []);
         }
-        var st = "";
+        var st = `${state_symbol.get(state).length}_`;
         for (var i = 0; i < countTapes; i++) {
             st += emptySymbol;
         }
@@ -428,10 +428,10 @@ function replaceCharAt(str, index, replacement) {
 }
 
 function replaceST(state, index, i, r) {
-    state_symbol.get(state)[index][0] = replaceCharAt(state_symbol.get(state)[index][0], i, r);
+    var a = state_symbol.get(state)[index][0];
+    state_symbol.get(state)[index][0] = a.split("_")[0] + "_" + replaceCharAt(a.split("_")[1], i, r);
 }
 
-// TODO
 function renderContentEditor(state) {
     var edit = document.getElementById(`edit-${state}`);
     edit.innerHTML = "";
@@ -440,7 +440,7 @@ function renderContentEditor(state) {
     for (var i = 0; i < countTapes; i++) {
         temp = "";
         com_ar.forEach((command, index) => {
-            temp += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="symbol-${state}-${index}-${i}" placeholder="0" value="${command[0].charAt(i)}"
+            temp += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="symbol-${state}-${index}-${i}" placeholder="0" value="${command[0].split("_")[1].charAt(i)}"
             onblur="replaceST('${state}', ${index}, ${i}, document.getElementById('symbol-${state}-${index}-${i}').value);"
             ${deletingStr ? `onclick="removeStr(${index})"` : ""}></input>`;
         });
@@ -618,15 +618,21 @@ stepsIntervalElement.addEventListener('blur', function() {
     render();
 });
 
-// TODO
 function convertToTuringProgramm() {
     var program = new TuringProgram(states[initialState], tapes, emptySymbol, countTapes, programmName);
     console.log(`------------------`)
     console.log(`programm:`)
+    var h = new Map();
+    var f = false;
     states.forEach((state, state_index) => {
         if (state_symbol.has(state)) {
             state_symbol.get(state).forEach((ar, ar_index) => {
-                var symbol = ar[0];
+                var symbol = ar[0].split("_")[1];
+                if (h.has(symbol)) {
+                    f = true;
+                } else {
+                    h.set(symbol, 1);
+                }
                 var new_st = ar[1];
                 for (var i = 0; i < countTapes; i++) {
                     program.addTransition(state, symbol, i, new Command(ar[2 + i * 2], MoveType[ar[3 + i * 2]], new_st));
@@ -636,6 +642,7 @@ function convertToTuringProgramm() {
         }
     });
     console.log(`------------------`)
+    if(f) return null;
     return program;
 }
 
@@ -674,6 +681,10 @@ function run() {
     isModificationAllowed = false;
     clearInterval(intervalId);
     var prog = convertToTuringProgramm();
+    if (prog == null) {
+        showErrorPopup("The program contains an identical tuple of read characters.");
+        return;
+    }
     //console.log(prog);
     startExecution(prog, maxSteps);
 };
@@ -750,8 +761,10 @@ function convertFromTuringProgram(program) {
     // Извлечение состояний и переходов
     program.transitionTable.forEach((symbolMap, state) => {
         states.push(state);
+        let symbolCounter = 0;
         symbolMap.forEach((tapeMap, symbol) => {
-            var temp = [symbol]
+            var tst = "" + symbolCounter + "_" + symbol;
+            var temp = [tst]
             var p = false;
             tapeMap.forEach((command, tapeNum) => {
                 if (!state_symbol.has(state)) {
@@ -769,6 +782,7 @@ function convertFromTuringProgram(program) {
                 temp.push(moveType);
             });
             state_symbol.get(state).push(temp);
+            symbolCounter++;
         });
     });
 
