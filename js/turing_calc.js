@@ -78,6 +78,7 @@ function addTape() {
                 for (var i = 0; i < state_symbol.get(states[st_i]).length; i++) {
                     state_symbol.get(states[st_i])[i].push(emptySymbol);
                     state_symbol.get(states[st_i])[i].push("S");
+                    state_symbol.get(states[st_i])[i][0] += emptySymbol;
                 }
             }
         }
@@ -116,6 +117,8 @@ function removeTape() {
                     for (var i = 0; i < state_symbol.get(states[st_i]).length; i++) {
                         state_symbol.get(states[st_i])[i].pop();
                         state_symbol.get(states[st_i])[i].pop();
+                        var a = state_symbol.get(states[st_i])[i][0];
+                        state_symbol.get(states[st_i])[i][0] = a.substring(0, a.length - 1);
                     }
                 }
             }
@@ -335,7 +338,11 @@ function addStateSymbol(state) {
         if (!state_symbol.has(state)) {
             state_symbol.set(state, []);
         }
-        var addAr = [emptySymbol, state];
+        var st = "";
+        for (var i = 0; i < countTapes; i++) {
+            st += emptySymbol;
+        }
+        var addAr = [st, state];
         for (var i = 0; i < countTapes; i++) {
             addAr.push(emptySymbol);
             addAr.push("S");
@@ -364,22 +371,30 @@ function renderHeader() {
             States
         </a>
     </div>
-    <div class="states-buttons">
-        <a class="state-button" onclick="removeStateSymbol()">
-            Symbol read
-        </a>
-    </div>
-    <div class="states-buttons">
-        <a class="state-button" onclick="removeStateSymbol()">
-            Next state
-        </a>
-    </div>`;
+    `;
     for (var i = 0; i < countTapes; i++) {
         editorHeaderElement.innerHTML +=
         `
         <div class="states-buttons">
             <a class="state-button" onclick="removeStateSymbol()">
-                Tape #${i} symbol
+                Tape #${i} read
+            </a>
+        </div>
+        `;
+    }
+    editorHeaderElement.innerHTML += `
+    <div class="states-buttons">
+        <a class="state-button" onclick="removeStateSymbol()">
+            Next state
+        </a>
+    </div>
+    `;
+    for (var i = 0; i < countTapes; i++) {
+        editorHeaderElement.innerHTML +=
+        `
+        <div class="states-buttons">
+            <a class="state-button" onclick="removeStateSymbol()">
+                Tape #${i} write
             </a>
         </div>
         <div class="states-buttons">
@@ -405,19 +420,34 @@ function renderStatePanel() {
         panel.innerHTML += `<a class="state-button" onclick="addState()">+</a>`;
 }
 
+function replaceCharAt(str, index, replacement) {
+    if (index < 0 || index >= str.length) {
+        return str;
+    }
+    return str.slice(0, index) + replacement + str.slice(index + 1);
+}
+
+function replaceST(state, index, i, r) {
+    state_symbol.get(state)[index][0] = replaceCharAt(state_symbol.get(state)[index][0], i, r);
+}
+
+// TODO
 function renderContentEditor(state) {
     var edit = document.getElementById(`edit-${state}`);
     edit.innerHTML = "";
     var temp = "";
     var com_ar = state_symbol.get(state) || [];
-    com_ar.forEach((command, index) => {
-        temp += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="symbol-${state}-${index}" placeholder="0" value="${command[0]}"
-        onblur="state_symbol.get('${state}')[${index}][0] = document.getElementById('symbol-${state}-${index}').value;"
-        ${deletingStr ? `onclick="removeStr(${index})"` : ""}></input>`;
-    });
-    if (!deletingStr)
-        temp += `<a class="state-button" onclick="addStateSymbol('${state}')">+</a>`;
-    edit.innerHTML += `<div class="states-buttons">${temp}</div>`;
+    for (var i = 0; i < countTapes; i++) {
+        temp = "";
+        com_ar.forEach((command, index) => {
+            temp += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="symbol-${state}-${index}-${i}" placeholder="0" value="${command[0].charAt(i)}"
+            onblur="replaceST('${state}', ${index}, ${i}, document.getElementById('symbol-${state}-${index}-${i}').value);"
+            ${deletingStr ? `onclick="removeStr(${index})"` : ""}></input>`;
+        });
+        if (!deletingStr)
+            temp += `<a class="state-button" onclick="addStateSymbol('${state}')">+</a>`;
+        edit.innerHTML += `<div class="states-buttons">${temp}</div>`;
+    }
 
     ///
     var nextStateDivCon = document.createElement("div");
@@ -447,8 +477,8 @@ function renderContentEditor(state) {
         tapeCon.className = "states-buttons";
         com_ar.forEach((command, index) => {
             var g = i;
-            tapeCon.innerHTML += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="${state}-${command[0]}-tape-${index}" placeholder="0" value="${command[2 + i * 2]}"
-            onblur="state_symbol.get('${state}')[${index}][2 + ${g} * 2] = document.getElementById('${state}-${command[0]}-tape-${index}').value;"
+            tapeCon.innerHTML += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="${state}-${command[0]}-tape-${g}" placeholder="0" value="${command[2 + i * 2]}"
+            onblur="state_symbol.get('${state}')[${index}][2 + ${g} * 2] = document.getElementById('${state}-${command[0]}-tape-${g}').value;"
             ${deletingStr ? `onclick="removeStr(${index})"` : ""}></input>`;
         });
         if (!deletingStr)
@@ -588,6 +618,7 @@ stepsIntervalElement.addEventListener('blur', function() {
     render();
 });
 
+// TODO
 function convertToTuringProgramm() {
     var program = new TuringProgram(states[initialState], tapes, emptySymbol, countTapes, programmName);
     console.log(`------------------`)
@@ -700,6 +731,7 @@ function removeProgramm(n) {
 	proggramDivUpdate();
 }
 
+// TODO
 function convertFromTuringProgram(program) {
     tapes = program.tape;
     console.log(program.countTape);

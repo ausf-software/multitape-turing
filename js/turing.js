@@ -158,36 +158,16 @@ class TuringMachine {
         return commands.get(tape_num);
     }
 
-    run(maxSteps) {
-        for (let step = 0; step < maxSteps; step++) {
-            if (!this.transitionTable.has(this.currentState)) {
-                break;
-            }
-            var flag = false;
-            for (var i = 0; i < this.countTape; i++) {
-                const currentSymbol = this.tape[i].charAt(this.headPosition);
-                const command = this.getCurrentCommand(currentSymbol, i);
-
-                if (command) {
-                    this.commandExecute(command, i);
-                } else {
-                    flag = true;
-                    break;
-                }
-            }
-            if (flag) break;
-            this.currentState = this.nextState;
-        }
-        return new ResultTuring(this.tape, this.history.length, this.headPosition, this.history);
-    }
-
     step() {
         if (!this.transitionTable.has(this.currentState)) {
             return false;
         }
         var flag = false;
+        var currentSymbol = "";
         for (var i = 0; i < this.countTape; i++) {
-            const currentSymbol = this.tape[i].charAt(this.headPosition[i]);
+            currentSymbol += this.tape[i].charAt(this.headPosition[i]);
+        }
+        for (var i = 0; i < this.countTape; i++) {
             const command = this.getCurrentCommand(currentSymbol, i);
 
             if (command) {
