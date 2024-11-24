@@ -308,6 +308,7 @@ function addState() {
         n.className = "editor-content";
         n.id = `edit-${name}`;
         raz.appendChild(n);
+        console.log(state_symbol)
         renderEditor()
         renderSettings();
     } else {
@@ -625,6 +626,7 @@ function convertToTuringProgramm() {
     var h = new Map();
     var f = false;
     states.forEach((state, state_index) => {
+        h = new Map();
         if (state_symbol.has(state)) {
             state_symbol.get(state).forEach((ar, ar_index) => {
                 var symbol = ar[0].split("_")[1];
@@ -642,6 +644,7 @@ function convertToTuringProgramm() {
         }
     });
     console.log(`------------------`)
+    
     if(f) return null;
     return program;
 }
@@ -733,7 +736,8 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
 });
 
 function addProgramm () {
-	programs.push(convertToTuringProgramm())
+	programs.push(convertToTuringProgramm());
+    //console.log(programs);
 	proggramDivUpdate();
 }
 
@@ -745,7 +749,7 @@ function removeProgramm(n) {
 // TODO
 function convertFromTuringProgram(program) {
     tapes = program.tape;
-    console.log(program.countTape);
+    //console.log(program.countTape);
     for (var i = 1; i < program.countTape; i++) {
         addTape()
     }
