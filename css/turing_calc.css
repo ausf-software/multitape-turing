@@ -565,4 +565,30 @@
     .tape-container {
         width: 922px;
     }
+
+    .readme-section {
+        max-width: 800px;
+        padding: 20px;
+        background-color: #2e104d;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        color: white;
+
+        margin: auto;
+        margin-bottom: 25px;
+    }
+
+    .readme h2 {
+        font-size: 1.5em;
+        margin-bottom: 1em;
+    }
+
+    .readme p {
+        margin-bottom: 1em;
+    }
+
+    .readme ul {
+        list-style-type: disc;
+        padding-left: 20px;
+    }
 }
