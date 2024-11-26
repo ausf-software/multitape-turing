@@ -736,9 +736,13 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
 });
 
 function addProgramm () {
-	programs.push(convertToTuringProgramm());
-    //console.log(programs);
-	proggramDivUpdate();
+    var prog = convertToTuringProgramm();
+    if (prog) {
+        programs.push(prog);
+        proggramDivUpdate();
+    } else {
+        showErrorPopup("The program contains an identical tuple of read characters.");
+    }
 }
 
 function removeProgramm(n) {
