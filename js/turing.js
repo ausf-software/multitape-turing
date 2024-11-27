@@ -106,6 +106,14 @@ class TuringProgram {
 }
 
 
+function countDots(str) {
+    return str.split('.').length - 1;
+}
+function escapeRegexExceptDots(str) {
+    var t = str;
+    return t.replace(/[-\/\\^$*+?()|[\]{}]/g, '\\$&');
+}
+
 class TuringMachine {
     constructor(program) {
         this.transitionTable = new Map(program.transitionTable);
@@ -144,7 +152,7 @@ class TuringMachine {
     commandExecute(command, tape_num) {
         this.history.push(`${this.currentState} | tape #${tape_num} | ${this.tape[tape_num].charAt(this.headPosition[tape_num])} | ${command.symbolToWrite}`);
         // Write the symbol
-        this.tape[tape_num] = this.tape[tape_num].substring(0, this.headPosition[tape_num]) + command.symbolToWrite +
+        this.tape[tape_num] = this.tape[tape_num].substring(0, this.headPosition[tape_num]) + (command.symbolToWrite === '.' ? this.tape[tape_num].charAt(this.headPosition[tape_num]) : command.symbolToWrite) +
                                 this.tape[tape_num].substring(this.headPosition[tape_num] + 1);
         // Move the caret
         this.moveCaret(command.move, tape_num);
@@ -158,6 +166,11 @@ class TuringMachine {
         return commands.get(tape_num);
     }
 
+    getCurrentCommandMap() {
+        const symbols = this.transitionTable.get(this.currentState) || new Map();
+        return symbols;
+    }
+
     step() {
         if (!this.transitionTable.has(this.currentState)) {
             return false;
@@ -167,8 +180,32 @@ class TuringMachine {
         for (var i = 0; i < this.countTape; i++) {
             currentSymbol += this.tape[i].charAt(this.headPosition[i]);
         }
+        var countPoint = Number.POSITIVE_INFINITY;
+        var mask = null;
+        var minCount = 0;
+        const keys = Array.from(this.getCurrentCommandMap().keys());
+        for (const key of keys) {
+            const regex = new RegExp(`^${escapeRegexExceptDots(key)}$`);
+            if (regex.test(currentSymbol)) {
+                //console.log(`The string '${currentSymbol}' matches the regular expression /${key}/`);
+                var m = countDots(key);
+                if (m < countPoint) {
+                    countPoint = m;
+                    mask = key;
+                    minCount = 1;
+                }
+                if (minCount == m) {
+                    minCount++;
+                }
+            }
+        }
+        if (minCount > 1) {
+            showErrorPopup("Кабум! Количество подходящих кортежей под кортеж считанных символов больше одного.");
+            return false;
+        }
+        //console.log(mask)
         for (var i = 0; i < this.countTape; i++) {
-            const command = this.getCurrentCommand(currentSymbol, i);
+            const command = this.getCurrentCommand(mask, i);
 
             if (command) {
                 this.commandExecute(command, i);

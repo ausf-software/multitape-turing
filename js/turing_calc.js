@@ -245,7 +245,7 @@ function showErrorPopup(message) {
 ////////////////////////////////////////////////////////
 
 
-function generateMoveSelect(state, symbol, tape_num, selected) {
+function generateMoveSelect(state, symbol, tape_num, selected, index) {
     const select = document.createElement('select');
 
     moveType.forEach((optionText, index) => {
@@ -260,11 +260,11 @@ function generateMoveSelect(state, symbol, tape_num, selected) {
         select.appendChild(option);
     });
     select.id = `move_type-${state}-${symbol}-${tape_num}`;
-    select.className = "symbol-field";
+    select.className = `symbol-field${index % 2 == 1 ? "-1" : ""}`;
     return select;
 }
 
-function generateStateSelect(state, symbol, selected) {
+function generateStateSelect(state, symbol, selected, index) {
     const select = document.createElement('select');
 
     states.forEach((optionText, index) => {
@@ -279,7 +279,7 @@ function generateStateSelect(state, symbol, selected) {
         select.appendChild(option);
     });
     select.id = `next_state-${state}-${symbol}`;
-    select.className = "symbol-field";
+    select.className = `symbol-field${index % 2 == 1 ? "-1" : ""}`;
     return select;
 }
 
@@ -441,9 +441,9 @@ function renderContentEditor(state) {
     for (var i = 0; i < countTapes; i++) {
         temp = "";
         com_ar.forEach((command, index) => {
-            temp += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="symbol-${state}-${index}-${i}" placeholder="0" value="${command[0].split("_")[1].charAt(i)}"
+            temp += `<input type="text" class="symbol-field${index % 2 == 1 ? "-1" : ""} ${deletingStr ? "deleting" : ""}" id="symbol-${state}-${index}-${i}" placeholder="0" value="${command[0].split("_")[1].charAt(i)}"
             onblur="replaceST('${state}', ${index}, ${i}, document.getElementById('symbol-${state}-${index}-${i}').value);"
-            ${deletingStr ? `onclick="removeStr(${index})"` : ""}></input>`;
+            ${deletingStr ? `onclick="removeStr(${index})" ` : " "}></input>`;
         });
         if (!deletingStr)
             temp += `<a class="state-button" onclick="addStateSymbol('${state}')">+</a>`;
@@ -454,7 +454,7 @@ function renderContentEditor(state) {
     var nextStateDivCon = document.createElement("div");
     nextStateDivCon.className = "states-buttons";
     com_ar.forEach((command, index) => {
-        var t = generateStateSelect(state, command[0], command[1])
+        var t = generateStateSelect(state, command[0], command[1], index)
         t.addEventListener('change', (event) => {
             state_symbol.get(state)[index][1] = t.value;
         });
@@ -478,7 +478,7 @@ function renderContentEditor(state) {
         tapeCon.className = "states-buttons";
         com_ar.forEach((command, index) => {
             var g = i;
-            tapeCon.innerHTML += `<input type="text" class="symbol-field ${deletingStr ? "deleting" : ""}" id="${state}-${command[0]}-tape-${g}" placeholder="0" value="${command[2 + i * 2]}"
+            tapeCon.innerHTML += `<input type="text" class="symbol-field${index % 2 == 1 ? "-1" : ""} ${deletingStr ? "deleting" : ""}" id="${state}-${command[0]}-tape-${g}" placeholder="0" value="${command[2 + i * 2]}"
             onblur="state_symbol.get('${state}')[${index}][2 + ${g} * 2] = document.getElementById('${state}-${command[0]}-tape-${g}').value;"
             ${deletingStr ? `onclick="removeStr(${index})"` : ""}></input>`;
         });
@@ -490,7 +490,7 @@ function renderContentEditor(state) {
         tapeCon2.className = "states-buttons";
         com_ar.forEach((command, index) => {
             var g = i;
-            var t = generateMoveSelect(state, command[0], index, command[3 + g * 2]);
+            var t = generateMoveSelect(state, command[0], index, command[3 + g * 2], index);
             t.addEventListener('change', (event) => {
                 state_symbol.get(state)[index][3 + g * 2] = t.value;
             });

@@ -129,7 +129,8 @@
 
 .rules-section  {
     margin-bottom: 20px;
-    .content-container {
+    .content-container-rules {
+        max-width: 1200px;
         width: 100%;
 		margin: auto;
     }
@@ -201,6 +202,28 @@
     }
 
     .symbol-field:focus {
+        color: white;
+    }
+
+    .symbol-field-1 {
+        height: 70px;
+        width: 70px;
+        display: flex;
+        margin: 10px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        justify-items: center;
+        background-color: #0d4263;
+        border-radius: 10px;
+        transition: background-color 0.3s ease;
+        border: none;
+    }
+    .symbol-field-1:hover {
+        background-color: #3a1289;
+    }
+
+    .symbol-field-1:focus {
         color: white;
     }
 
@@ -522,6 +545,7 @@
 .readme h2 {
     font-size: 1.5em;
     margin-bottom: 1em;
+    margin-top: 40px;
 }
 
 .readme p {
