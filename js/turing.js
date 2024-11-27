@@ -187,15 +187,16 @@ class TuringMachine {
         for (const key of keys) {
             const regex = new RegExp(`^${escapeRegexExceptDots(key)}$`);
             if (regex.test(currentSymbol)) {
-                //console.log(`The string '${currentSymbol}' matches the regular expression /${key}/`);
+                console.log(`The string '${currentSymbol}' matches the regular expression /${key}/`);
                 var m = countDots(key);
                 if (m < countPoint) {
                     countPoint = m;
                     mask = key;
                     minCount = 1;
-                }
-                if (minCount == m) {
-                    minCount++;
+                } else {
+                    if (countPoint == m) {
+                        minCount++;
+                    }
                 }
             }
         }
