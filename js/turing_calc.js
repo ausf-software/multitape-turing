@@ -20,7 +20,7 @@ var countTapes = 0;
 
 var isModificationAllowed = true;
 
-var emptySymbol = 'f';
+var emptySymbol = ' ';
 
 var tapeWidth = 362 - 2;
 const cellWidth = 40;
@@ -70,7 +70,7 @@ function addTape() {
         tapeElements[countTapes] = tapeDiv;
         numsElements[countTapes] = numDiv;
         headPosition[countTapes] = 0;
-        tapes[countTapes] = "f";
+        tapes[countTapes] = emptySymbol;
         caretPosDelta[countTapes] = 0;
 
         for (var st_i = 0; st_i < states.length; st_i++) {
@@ -203,7 +203,7 @@ function renderTape(emptySymbol, tape, element, head, nums, index) {
 function handleCellClick(index) {
     if (isModificationAllowed) {
         let userInput = prompt("Enter text to tape " + index + ":");
-        if (userInput == null || userInput.length == 0) userInput = "f";
+        if (userInput == null || userInput.length == 0) userInput = " ";
         tapes[index] = userInput;
         headPosition[index] = 0;
         caretPosDelta[index] = 0;
@@ -561,8 +561,8 @@ emptySymbolElement.addEventListener('blur', function() {
         if (temp && temp.length == 1)
             emptySymbol = temp;
         else {
-            emptySymbol = 'f';
-            emptySymbolElement.value = 'f';
+            emptySymbol = ' ';
+            emptySymbolElement.value = ' ';
         }
     } else {
         showErrorPopup("Machine is run");
@@ -752,10 +752,61 @@ function removeProgramm(n) {
 
 // TODO
 function convertFromTuringProgram(program) {
+    var r = countTapes - program.countTape;
     tapes = program.tape;
     //console.log(program.countTape);
-    for (var i = 1; i < program.countTape; i++) {
-        addTape()
+    for (var i = countTapes; i < program.countTape; i++) {
+        var mainDiv = document.createElement("div");
+        mainDiv.id = "tape-container" + countTapes;
+        mainDiv.className = "tape-container";
+
+        var numDiv = document.createElement("div");
+        var tapeDiv = document.createElement("div");
+        numDiv.id = "tape-numbers" + countTapes;
+        tapeDiv.id = "tape" + countTapes;
+        numDiv.className = "tape";
+        tapeDiv.className = "tape";
+
+        var carDiv = document.createElement("div");
+        carDiv.className = "caret";
+        carDiv.id = "caret";
+
+        mainDiv.appendChild(numDiv);
+        mainDiv.appendChild(tapeDiv);
+        mainDiv.appendChild(carDiv);
+
+        tapeElement.appendChild(mainDiv);
+
+        tapeElements[countTapes] = tapeDiv;
+        numsElements[countTapes] = numDiv;
+        headPosition[countTapes] = 0;
+        tapes[countTapes] = "f";
+        caretPosDelta[countTapes] = 0;
+
+        countTapes += 1;
+    }
+    console.log(r)
+    if (r > 0) {
+        for (var i = r; i > 0; i--) {
+            countTapes -= 1;
+
+            var lastTapeId = "tape-container" + countTapes;
+            var lastTapeElement = document.getElementById(lastTapeId);
+
+            if (lastTapeElement) {
+                lastTapeElement.remove();
+            } else {
+                return;
+            }
+
+
+            tapeElements.pop();
+            numsElements.pop();
+            headPosition.pop();
+            tapes.pop();
+            caretPosDelta.pop();
+
+        }
     }
     states = [];
     state_symbol = new Map();
@@ -816,9 +867,14 @@ function loadProgramm(n) {
 
     convertFromTuringProgram(p);
     tapes = p.tape;
-    console.log(programs)
+    if (tapes.length < countTapes) {
+        for (var i = tapes.length; i < countTapes; i++) {
+            tapes.push(emptySymbol);
+        }
+    }
+    //console.log(programs)
 
-    console.log(states)
+    //console.log(states)
     var raz = document.getElementById("editor-content");
     raz.innerHTML = `<div class="states-buttons" id="states-buttons"></div>`;
     states.forEach((state) => {
