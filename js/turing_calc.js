@@ -20,7 +20,7 @@ var countTapes = 0;
 
 var isModificationAllowed = true;
 
-var emptySymbol = ' ';
+var emptySymbol = '-';
 
 var tapeWidth = 362 - 2;
 const cellWidth = 40;
