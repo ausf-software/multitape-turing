@@ -203,7 +203,7 @@ function renderTape(emptySymbol, tape, element, head, nums, index) {
 function handleCellClick(index) {
     if (isModificationAllowed) {
         let userInput = prompt("Enter text to tape " + index + ":");
-        if (userInput == null || userInput.length == 0) userInput = " ";
+        if (userInput == null || userInput.length == 0) userInput = emptySymbol;
         tapes[index] = userInput;
         headPosition[index] = 0;
         caretPosDelta[index] = 0;
@@ -886,7 +886,7 @@ function loadProgramm(n) {
 
     renderSettings();
 	programmNameElement.value = programmName;
-    initialState.value = states.indexOf(p.initialState);
+    initialStateElement.value = states.indexOf(p.initialState);
     emptySymbolElement.value = emptySymbol;
     render();
     renderEditor();
