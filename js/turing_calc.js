@@ -883,7 +883,7 @@ function loadProgramm(n) {
         n.id = `edit-${state}`;
         raz.appendChild(n);
     });
-
+    name_states = parseInt(states[states.length-1].slice(1)) + 1;
     renderSettings();
 	programmNameElement.value = programmName;
     initialStateElement.value = states.indexOf(p.initialState);
